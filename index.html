@@ -1,0 +1,67 @@
+<!DOCTYPE html><head>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script>
+const DIAL_CODE="+44";
+const PHONE_NUMBER="7955501891";
+const API_URL="https://dev.api.echo.ptops.net/api/v1";
+const GAME_URL="https://quocthanqqq.github.io/FantaMergeDemo";
+const GAME_ID="monster_merge";
+
+var PLAYER_ID;
+var SESSION_TOKEN;
+var FULL_URL;
+
+function login() {
+	const LOGIN_URL=API_URL+"/login";
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", LOGIN_URL, true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			var json = JSON.parse(xhr.responseText);
+			PLAYER_ID = json.player.id;
+			SESSION_TOKEN = json.token;
+			launch_game();
+		}
+	};
+	var data = JSON.stringify({"dial_code": DIAL_CODE, "phone_number": PHONE_NUMBER, "otp": ""});
+	xhr.send(data);
+}
+
+function launch_game() {
+	const LAUNCH_GAME_URL=API_URL+"/launch_game";
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", LAUNCH_GAME_URL, true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.setRequestHeader("Authorization", "Bearer " + SESSION_TOKEN);
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState === 4 && xhr.status === 200) {
+			var json = JSON.parse(xhr.responseText);
+			
+			SESSION_TOKEN= json.result.game_session_id;
+
+			FULL_URL = GAME_URL + "?user_id=" + PLAYER_ID + "&language=en&session_token=" + SESSION_TOKEN + "&game_id=" + GAME_ID;
+			
+			generate_iframe();
+		}
+	};
+
+	var data = JSON.stringify({"player_id": PLAYER_ID, "game_id": GAME_ID, "game_name": GAME_ID, "game_type": "skill-game", "provider_id": "4d129927-1449-4d5a-95a1-5dcae89b3116", "external_provider_id": "", "external_provider_slug": "", "user_language": "en", "user_currency": "PHP", "is_mobile": false, "is_demo": false, "game_url": GAME_URL});
+	xhr.send(data);
+}
+
+function generate_iframe()
+{
+const iframe = document.createElement("iframe");
+iframe.src = FULL_URL;
+document.body.appendChild(iframe);
+}
+
+login();
+
+</script>
+</body>
+</html>
